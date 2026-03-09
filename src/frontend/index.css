@@ -1,0 +1,184 @@
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/assets/fonts/BricolageGrotesque[opsz,wdth,wght].woff2") format("woff2");
+  font-display: swap;
+  font-weight: 100 900;
+}
+
+@font-face {
+  font-family: "Sora";
+  src: url("/assets/fonts/Sora[wght].woff2") format("woff2");
+  font-display: swap;
+  font-weight: 100 800;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* AR Esports - Free Fire Max Dark Theme */
+    --background: 15 0.02 270;
+    --foreground: 95 0.01 60;
+    --card: 18 0.025 260;
+    --card-foreground: 95 0.01 60;
+    --popover: 16 0.02 265;
+    --popover-foreground: 95 0.01 60;
+    --primary: 65 0.22 45;
+    --primary-foreground: 15 0.02 270;
+    --secondary: 25 0.03 260;
+    --secondary-foreground: 85 0.015 60;
+    --muted: 22 0.025 260;
+    --muted-foreground: 60 0.04 50;
+    --accent: 55 0.25 30;
+    --accent-foreground: 10 0.02 270;
+    --destructive: 55 0.25 25;
+    --destructive-foreground: 98 0.005 0;
+    --border: 28 0.04 40;
+    --input: 22 0.03 260;
+    --ring: 65 0.22 45;
+    --radius: 0.5rem;
+
+    /* Custom tokens */
+    --fire-orange: 65 0.22 45;
+    --fire-red: 50 0.25 25;
+    --fire-yellow: 80 0.18 80;
+    --ember: 72 0.2 55;
+    --deep-dark: 10 0.02 270;
+    --dark-surface: 16 0.025 260;
+    --dark-elevated: 22 0.03 255;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Sora", sans-serif;
+    background-color: oklch(var(--background));
+    color: oklch(var(--foreground));
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: oklch(var(--deep-dark));
+}
+::-webkit-scrollbar-thumb {
+  background: oklch(var(--fire-orange));
+  border-radius: 3px;
+}
+
+/* Fire glow effect */
+.fire-glow {
+  text-shadow: 0 0 20px oklch(65% 0.22 45 / 0.8), 0 0 40px oklch(65% 0.22 45 / 0.4), 0 0 80px oklch(50% 0.25 25 / 0.3);
+}
+
+.card-glow {
+  box-shadow: 0 0 20px oklch(65% 0.22 45 / 0.15), inset 0 1px 0 oklch(65% 0.22 45 / 0.1);
+}
+
+.card-glow:hover {
+  box-shadow: 0 0 30px oklch(65% 0.22 45 / 0.3), 0 0 60px oklch(65% 0.22 45 / 0.1), inset 0 1px 0 oklch(65% 0.22 45 / 0.2);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* Tactical grid pattern */
+.tactical-grid {
+  background-image:
+    linear-gradient(oklch(65% 0.22 45 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(65% 0.22 45 / 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Confetti animation */
+@keyframes confetti-fall {
+  0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes confetti-sway {
+  0%, 100% { margin-left: 0; }
+  50% { margin-left: 40px; }
+}
+
+.confetti-piece {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  top: -20px;
+  animation: confetti-fall linear forwards, confetti-sway ease-in-out infinite;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* Gradient border */
+.gradient-border {
+  position: relative;
+  background: oklch(var(--dark-surface));
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, oklch(var(--fire-orange)), oklch(var(--fire-red)), transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Glitch text */
+@keyframes glitch {
+  0%, 90%, 100% { transform: translate(0); }
+  92% { transform: translate(-2px, 0); color: oklch(65% 0.25 25); }
+  94% { transform: translate(2px, 0); color: oklch(65% 0.22 80); }
+  96% { transform: translate(0); }
+}
+
+.glitch-text {
+  animation: glitch 4s infinite;
+}
+
+/* Pulse ring */
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 oklch(65% 0.22 45 / 0.4); }
+  70% { box-shadow: 0 0 0 15px oklch(65% 0.22 45 / 0); }
+  100% { box-shadow: 0 0 0 0 oklch(65% 0.22 45 / 0); }
+}
+
+.pulse-ring {
+  animation: pulse-ring 2s infinite;
+}
+
+/* Badge glow */
+.badge-pending { background: oklch(70% 0.2 80 / 0.2); color: oklch(80% 0.18 80); border: 1px solid oklch(70% 0.18 80 / 0.5); }
+.badge-approved { background: oklch(70% 0.2 145 / 0.2); color: oklch(75% 0.2 145); border: 1px solid oklch(70% 0.2 145 / 0.5); }
+.badge-rejected { background: oklch(55% 0.25 25 / 0.2); color: oklch(65% 0.2 25); border: 1px solid oklch(55% 0.2 25 / 0.5); }
+
+/* scanline effect */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+.scanline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: oklch(65% 0.22 45 / 0.1);
+  animation: scanline 4s linear infinite;
+  pointer-events: none;
+}
