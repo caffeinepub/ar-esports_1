@@ -117,6 +117,7 @@ export function useGetAllUsers() {
       return actor.getAllUsers();
     },
     enabled: !!actor && !isFetching,
+    refetchInterval: 5000,
   });
 }
 
@@ -129,6 +130,7 @@ export function useGetAllRegistrations() {
       return actor.getAllRegistrations();
     },
     enabled: !!actor && !isFetching,
+    refetchInterval: 5000,
   });
 }
 
@@ -141,6 +143,7 @@ export function useGetAllPaymentRequests() {
       return actor.getAllPaymentRequests();
     },
     enabled: !!actor && !isFetching,
+    refetchInterval: 5000,
   });
 }
 

@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,13 +13,14 @@ import {
   CheckCircle,
   CreditCard,
   Loader2,
+  RefreshCw,
   Shield,
   Trophy,
   Users,
   XCircle,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { PaymentStatus } from "../backend";
 import {
@@ -38,15 +38,32 @@ export function AdminPage() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [error, setError] = useState("");
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const { data: users = [], isLoading: usersLoading } = useGetAllUsers();
-  const { data: registrations = [], isLoading: regsLoading } =
-    useGetAllRegistrations();
-  const { data: payments = [], isLoading: paymentsLoading } =
-    useGetAllPaymentRequests();
+  const {
+    data: users = [],
+    isLoading: usersLoading,
+    dataUpdatedAt: usersUpdated,
+  } = useGetAllUsers();
+  const {
+    data: registrations = [],
+    isLoading: regsLoading,
+    dataUpdatedAt: regsUpdated,
+  } = useGetAllRegistrations();
+  const {
+    data: payments = [],
+    isLoading: paymentsLoading,
+    dataUpdatedAt: paymentsUpdated,
+  } = useGetAllPaymentRequests();
   const { data: tournaments = [] } = useListTournaments();
   const approvePayment = useApprovePayment();
   const rejectPayment = useRejectPayment();
+
+  useEffect(() => {
+    if (usersUpdated || regsUpdated || paymentsUpdated) {
+      setLastUpdated(new Date());
+    }
+  }, [usersUpdated, regsUpdated, paymentsUpdated]);
 
   const handleLogin = () => {
     if (password === ADMIN_PASSWORD) {
@@ -81,6 +98,10 @@ export function AdminPage() {
     }
   };
 
+  const pendingCount = payments.filter(
+    (p) => p.status === PaymentStatus.pending,
+  ).length;
+
   if (!authenticated) {
     return (
       <main className="pt-20 min-h-screen flex items-center justify-center px-4">
@@ -111,7 +132,6 @@ export function AdminPage() {
               Enter password to access admin controls
             </p>
           </div>
-
           <div className="space-y-3">
             <Input
               data-ocid="admin.password.input"
@@ -159,14 +179,43 @@ export function AdminPage() {
             className="space-y-6"
           >
             {/* Header */}
-            <div className="flex items-center gap-3">
-              <Shield
-                className="w-6 h-6"
-                style={{ color: "oklch(65% 0.22 45)" }}
-              />
-              <h1 className="font-display font-extrabold text-2xl text-foreground">
-                Admin Dashboard
-              </h1>
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <Shield
+                  className="w-6 h-6"
+                  style={{ color: "oklch(65% 0.22 45)" }}
+                />
+                <h1 className="font-display font-extrabold text-2xl text-foreground">
+                  Admin Dashboard
+                </h1>
+              </div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
+                  style={{
+                    background: "oklch(35% 0.15 145 / 0.2)",
+                    border: "1px solid oklch(50% 0.2 145 / 0.4)",
+                  }}
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span
+                      className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                      style={{ background: "oklch(60% 0.22 145)" }}
+                    />
+                    <span
+                      className="relative inline-flex rounded-full h-2 w-2"
+                      style={{ background: "oklch(60% 0.22 145)" }}
+                    />
+                  </span>
+                  <span style={{ color: "oklch(70% 0.18 145)" }}>LIVE</span>
+                </div>
+                {lastUpdated && (
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <RefreshCw className="w-3 h-3" />
+                    {lastUpdated.toLocaleTimeString()}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Stats */}
@@ -220,19 +269,52 @@ export function AdminPage() {
               >
                 <TabsTrigger data-ocid="admin.users.tab" value="users">
                   All Users
+                  {users.length > 0 && (
+                    <span
+                      className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
+                      style={{
+                        background: "oklch(65% 0.22 45 / 0.2)",
+                        color: "oklch(65% 0.22 45)",
+                      }}
+                    >
+                      {users.length}
+                    </span>
+                  )}
                 </TabsTrigger>
                 <TabsTrigger
                   data-ocid="admin.registrations.tab"
                   value="registrations"
                 >
                   Registrations
+                  {registrations.length > 0 && (
+                    <span
+                      className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
+                      style={{
+                        background: "oklch(65% 0.22 45 / 0.2)",
+                        color: "oklch(65% 0.22 45)",
+                      }}
+                    >
+                      {registrations.length}
+                    </span>
+                  )}
                 </TabsTrigger>
                 <TabsTrigger data-ocid="admin.payments.tab" value="payments">
                   Payments
+                  {pendingCount > 0 && (
+                    <span
+                      className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
+                      style={{
+                        background: "oklch(55% 0.22 25 / 0.25)",
+                        color: "oklch(70% 0.22 25)",
+                      }}
+                    >
+                      {pendingCount} pending
+                    </span>
+                  )}
                 </TabsTrigger>
               </TabsList>
 
-              {/* All Users */}
+              {/* Users */}
               <TabsContent value="users">
                 <div
                   className="rounded-xl overflow-hidden"
@@ -434,7 +516,10 @@ export function AdminPage() {
                           className="rounded-xl p-4 flex items-center justify-between flex-wrap gap-3"
                           style={{
                             background: "oklch(16% 0.025 260)",
-                            border: "1px solid oklch(28% 0.04 40 / 0.4)",
+                            border:
+                              p.status === PaymentStatus.pending
+                                ? "1px solid oklch(55% 0.22 45 / 0.5)"
+                                : "1px solid oklch(28% 0.04 40 / 0.4)",
                           }}
                         >
                           <div className="space-y-1 flex-1 min-w-0">
@@ -456,7 +541,6 @@ export function AdminPage() {
                               ).toLocaleString()}
                             </div>
                           </div>
-
                           <div className="flex items-center gap-3">
                             <span
                               className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
@@ -469,7 +553,6 @@ export function AdminPage() {
                             >
                               {p.status}
                             </span>
-
                             {p.status === PaymentStatus.pending && (
                               <div className="flex gap-2">
                                 <Button

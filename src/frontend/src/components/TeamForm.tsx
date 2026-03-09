@@ -29,7 +29,10 @@ export function TeamForm({ members, onChange, count }: TeamFormProps) {
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">
+              <Label
+                className="text-xs font-semibold"
+                style={{ color: "oklch(85% 0.04 50)" }}
+              >
                 FF Max UID *
               </Label>
               <Input
@@ -42,11 +45,15 @@ export function TeamForm({ members, onChange, count }: TeamFormProps) {
                     : ""
                 }
                 onChange={(e) => onChange(i, "ffUID", e.target.value)}
-                className="h-9 text-sm bg-input border-border/50 focus:border-fire-orange/50"
+                className="h-9 text-sm border-border/50 focus:border-fire-orange/50"
+                style={{ backgroundColor: "white", color: "black" }}
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">
+              <Label
+                className="text-xs font-semibold"
+                style={{ color: "oklch(85% 0.04 50)" }}
+              >
                 Game Name *
               </Label>
               <Input
@@ -54,11 +61,15 @@ export function TeamForm({ members, onChange, count }: TeamFormProps) {
                 placeholder="In-game name"
                 value={members[i]?.gameName || ""}
                 onChange={(e) => onChange(i, "gameName", e.target.value)}
-                className="h-9 text-sm bg-input border-border/50 focus:border-fire-orange/50"
+                className="h-9 text-sm border-border/50 focus:border-fire-orange/50"
+                style={{ backgroundColor: "white", color: "black" }}
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">
+              <Label
+                className="text-xs font-semibold"
+                style={{ color: "oklch(85% 0.04 50)" }}
+              >
                 Phone Number *
               </Label>
               <Input
@@ -67,22 +78,34 @@ export function TeamForm({ members, onChange, count }: TeamFormProps) {
                 placeholder="10-digit mobile"
                 value={members[i]?.phoneNumber || ""}
                 onChange={(e) => onChange(i, "phoneNumber", e.target.value)}
-                className="h-9 text-sm bg-input border-border/50 focus:border-fire-orange/50"
+                className="h-9 text-sm border-border/50 focus:border-fire-orange/50"
+                style={{ backgroundColor: "white", color: "black" }}
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Email *</Label>
+              <Label
+                className="text-xs font-semibold"
+                style={{ color: "oklch(85% 0.04 50)" }}
+              >
+                Email *
+              </Label>
               <Input
                 data-ocid={`team.player${i + 1}.email.input`}
                 type="email"
                 placeholder="email@example.com"
                 value={members[i]?.email || ""}
                 onChange={(e) => onChange(i, "email", e.target.value)}
-                className="h-9 text-sm bg-input border-border/50 focus:border-fire-orange/50"
+                className="h-9 text-sm border-border/50 focus:border-fire-orange/50"
+                style={{ backgroundColor: "white", color: "black" }}
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Age *</Label>
+              <Label
+                className="text-xs font-semibold"
+                style={{ color: "oklch(85% 0.04 50)" }}
+              >
+                Age *
+              </Label>
               <Input
                 data-ocid={`team.player${i + 1}.age.input`}
                 type="number"
@@ -93,7 +116,8 @@ export function TeamForm({ members, onChange, count }: TeamFormProps) {
                   members[i]?.age !== undefined ? String(members[i].age) : ""
                 }
                 onChange={(e) => onChange(i, "age", e.target.value)}
-                className="h-9 text-sm bg-input border-border/50 focus:border-fire-orange/50"
+                className="h-9 text-sm border-border/50 focus:border-fire-orange/50"
+                style={{ backgroundColor: "white", color: "black" }}
               />
             </div>
           </div>
