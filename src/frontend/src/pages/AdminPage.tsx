@@ -550,6 +550,9 @@ export function AdminPage() {
                                 <div style={{ color: "black" }}>
                                   UID: {m.ffUID.toString()}
                                 </div>
+                                <div style={{ color: "black" }}>
+                                  Ph: {m.phoneNumber}
+                                </div>
                               </div>
                             ))}
                           </div>
