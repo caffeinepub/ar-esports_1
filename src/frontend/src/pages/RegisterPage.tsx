@@ -11,20 +11,18 @@ import {
   User,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import type { TeamMember, UserProfile } from "../backend";
+import type { TeamMember } from "../backend";
 import { TournamentType } from "../backend";
 import { ConfettiEffect } from "../components/ConfettiEffect";
 import { TeamForm } from "../components/TeamForm";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import {
   useCheckDuplicate,
-  useGetCallerProfile,
   useListTournaments,
   useRegisterTournament,
-  useSaveProfile,
 } from "../hooks/useQueries";
 
 type Step = "profile" | "team" | "payment" | "done";
@@ -36,32 +34,21 @@ export function RegisterPage() {
 
   const { data: tournaments, isLoading: tournamentsLoading } =
     useListTournaments();
-  const { data: profile, isLoading: profileLoading } = useGetCallerProfile();
   const { data: isDuplicate, isLoading: dupLoading } = useCheckDuplicate(
     tournamentId || "",
   );
-  const saveMutation = useSaveProfile();
   const registerMutation = useRegisterTournament();
 
   const tournament = tournaments?.find((t) => t.id === tournamentId);
   const isDuo = tournament?.tournamentType === TournamentType.duo;
-  // Only compute memberCount once tournament is loaded to avoid defaulting to 4
   const memberCount = tournamentsLoading || !tournament ? null : isDuo ? 2 : 4;
 
   const [step, setStep] = useState<Step>("profile");
   const [showConfetti, setShowConfetti] = useState(false);
   const [qrError, setQrError] = useState(false);
 
-  const [profileForm, setProfileForm] = useState<
-    Partial<UserProfile & { name: string }>
-  >({
-    name: "",
-    email: "",
-    age: undefined,
-    ffUID: undefined,
-    gameName: "",
-    phoneNumber: "",
-  });
+  const [profileName, setProfileName] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
 
   const [members, setMembers] = useState<Partial<TeamMember>[]>(
     Array.from({ length: 4 }, () => ({
@@ -74,19 +61,6 @@ export function RegisterPage() {
   );
   const [teamUPI, setTeamUPI] = useState("");
   const [teamInsta, setTeamInsta] = useState("");
-
-  useEffect(() => {
-    if (profile) {
-      setProfileForm({
-        name: profile.name,
-        email: profile.email,
-        age: profile.age,
-        ffUID: profile.ffUID,
-        gameName: profile.gameName,
-        phoneNumber: profile.phoneNumber,
-      });
-    }
-  }, [profile]);
 
   const handleMemberChange = useCallback(
     (index: number, field: keyof TeamMember, value: string) => {
@@ -106,37 +80,22 @@ export function RegisterPage() {
     [],
   );
 
-  const handleSaveProfile = async () => {
-    if (
-      !profileForm.name ||
-      !profileForm.email ||
-      !profileForm.age ||
-      !profileForm.ffUID ||
-      !profileForm.gameName ||
-      !profileForm.phoneNumber
-    ) {
-      toast.error("Please fill all profile fields!");
+  const handleSubmitProfile = () => {
+    if (!profileName.trim()) {
+      toast.error("Apna naam bharo!");
       return;
     }
-    try {
-      await saveMutation.mutateAsync({
-        name: profileForm.name || "",
-        email: profileForm.email || "",
-        age: profileForm.age || BigInt(0),
-        ffUID: profileForm.ffUID || BigInt(0),
-        gameName: profileForm.gameName || "",
-        phoneNumber: profileForm.phoneNumber || "",
-      });
-    } catch (_e) {
-      // continue even if profile save has issues
+    if (!profilePhone.trim()) {
+      toast.error("Phone number bharo!");
+      return;
     }
     setStep("team");
   };
 
   const handleSubmitTeam = () => {
-    if (!memberCount) return;
-    const validMembers = members.slice(0, memberCount);
-    for (let i = 0; i < memberCount; i++) {
+    const count = memberCount ?? (isDuo ? 2 : 4);
+    const validMembers = members.slice(0, count);
+    for (let i = 0; i < count; i++) {
       const m = validMembers[i];
       if (
         !m?.ffUID ||
@@ -145,31 +104,27 @@ export function RegisterPage() {
         !m?.email ||
         !m?.age
       ) {
-        toast.error(`Player ${i + 1}: fill all fields!`);
+        toast.error(`Player ${i + 1} ke saare fields fill karo!`);
         return;
       }
     }
-    if (!teamUPI) {
-      toast.error("Team Leader UPI ID is required for prize!");
-      return;
-    }
-    if (!teamInsta) {
-      toast.error("Team Leader Instagram ID is required for redeem code!");
+    if (!teamUPI && !teamInsta) {
+      toast.error("UPI ID ya Instagram ID mein se ek zaroor bharo!");
       return;
     }
     setStep("payment");
   };
 
   const handlePaid = async () => {
-    if (!tournamentId || !memberCount) return;
-    const validMembers = members.slice(0, memberCount).map((m) => ({
+    if (!tournamentId) return;
+    const count = memberCount ?? (isDuo ? 2 : 4);
+    const validMembers = members.slice(0, count).map((m) => ({
       ffUID: m.ffUID || BigInt(0),
       gameName: m.gameName || "",
       phoneNumber: m.phoneNumber || "",
       email: m.email || "",
       age: m.age || BigInt(0),
     }));
-    // Try to register — always show success screen regardless
     try {
       await registerMutation.mutateAsync({
         tournamentId,
@@ -182,7 +137,6 @@ export function RegisterPage() {
     } catch (_e) {
       // Silently ignore — request is still forwarded to admin
     }
-    // Always go to done and show confetti
     setStep("done");
     setShowConfetti(true);
   };
@@ -232,7 +186,7 @@ export function RegisterPage() {
     );
   }
 
-  if (dupLoading || profileLoading || tournamentsLoading) {
+  if (dupLoading || tournamentsLoading) {
     return (
       <main className="pt-20 min-h-screen flex items-center justify-center">
         <div
@@ -287,8 +241,8 @@ export function RegisterPage() {
     );
   }
 
-  // memberCount is guaranteed non-null here since tournamentsLoading is false
-  const resolvedMemberCount = memberCount ?? 2;
+  const resolvedMemberCount = memberCount ?? (isDuo ? 2 : 4);
+  const steps: Step[] = ["profile", "team", "payment", "done"];
 
   return (
     <main className="pt-20 min-h-screen px-4 py-8">
@@ -347,7 +301,7 @@ export function RegisterPage() {
         )}
 
         <div className="flex items-center gap-2 mb-8">
-          {(["profile", "team", "payment", "done"] as Step[]).map((s, i) => (
+          {steps.map((s, i) => (
             <div key={s} className="flex items-center gap-2">
               <div
                 className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all"
@@ -355,23 +309,21 @@ export function RegisterPage() {
                   background:
                     step === s
                       ? "oklch(65% 0.22 45)"
-                      : ["profile", "team", "payment", "done"].indexOf(step) > i
+                      : steps.indexOf(step) > i
                         ? "oklch(65% 0.22 45 / 0.3)"
                         : "oklch(22% 0.03 260)",
                   color:
                     step === s ? "oklch(10% 0.02 270)" : "oklch(60% 0.04 50)",
                 }}
               >
-                {["profile", "team", "payment", "done"].indexOf(step) > i
-                  ? "✓"
-                  : i + 1}
+                {steps.indexOf(step) > i ? "✓" : i + 1}
               </div>
-              {i < 3 && (
+              {i < steps.length - 1 && (
                 <div
                   className="flex-1 h-0.5 min-w-4"
                   style={{
                     background:
-                      ["profile", "team", "payment", "done"].indexOf(step) > i
+                      steps.indexOf(step) > i
                         ? "oklch(65% 0.22 45 / 0.5)"
                         : "oklch(22% 0.03 260)",
                   }}
@@ -395,104 +347,60 @@ export function RegisterPage() {
             >
               <div>
                 <h3 className="font-display font-bold text-xl text-foreground mb-1">
-                  Your Profile
+                  Team Leader Profile
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Confirm your player details before registration.
+                  Apna naam aur phone number bharo.
                 </p>
               </div>
               <div
                 className="rounded-xl p-5 space-y-4"
                 style={{
                   background: "oklch(16% 0.025 260)",
-                  border: "1px solid oklch(28% 0.04 40 / 0.5)",
+                  border: "1px solid oklch(65% 0.22 45 / 0.2)",
                 }}
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {[
-                    {
-                      id: "profile.name.input",
-                      label: "Full Name *",
-                      placeholder: "Your name",
-                      type: "text",
-                      field: "name" as const,
-                    },
-                    {
-                      id: "profile.email.input",
-                      label: "Email *",
-                      placeholder: "email@example.com",
-                      type: "email",
-                      field: "email" as const,
-                    },
-                    {
-                      id: "profile.age.input",
-                      label: "Age *",
-                      placeholder: "Your age",
-                      type: "number",
-                      field: "age" as const,
-                    },
-                    {
-                      id: "profile.phone.input",
-                      label: "Phone Number *",
-                      placeholder: "10-digit mobile",
-                      type: "tel",
-                      field: "phoneNumber" as const,
-                    },
-                    {
-                      id: "profile.ffuid.input",
-                      label: "FF Max UID *",
-                      placeholder: "Free Fire Max UID",
-                      type: "number",
-                      field: "ffUID" as const,
-                    },
-                    {
-                      id: "profile.gamename.input",
-                      label: "Game Name *",
-                      placeholder: "In-game name",
-                      type: "text",
-                      field: "gameName" as const,
-                    },
-                  ].map(({ id, label, placeholder, type, field }) => (
-                    <div key={id} className="space-y-1.5">
-                      <Label
-                        className="text-xs font-semibold"
-                        style={{ color: "oklch(85% 0.04 50)" }}
-                      >
-                        {label}
-                      </Label>
-                      <Input
-                        data-ocid={id}
-                        type={type}
-                        placeholder={placeholder}
-                        value={
-                          field === "age" || field === "ffUID"
-                            ? profileForm[field] !== undefined
-                              ? String(profileForm[field])
-                              : ""
-                            : (profileForm[field] as string) || ""
-                        }
-                        onChange={(e) =>
-                          setProfileForm((p) => ({
-                            ...p,
-                            [field]:
-                              field === "age" || field === "ffUID"
-                                ? e.target.value
-                                  ? BigInt(e.target.value)
-                                  : undefined
-                                : e.target.value,
-                          }))
-                        }
-                        className="h-9 text-sm"
-                        style={{ backgroundColor: "white", color: "black" }}
-                      />
-                    </div>
-                  ))}
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="profile-name"
+                    className="text-xs font-semibold"
+                    style={{ color: "oklch(85% 0.04 50)" }}
+                  >
+                    Full Name
+                  </Label>
+                  <Input
+                    id="profile-name"
+                    data-ocid="profile.name.input"
+                    placeholder="Apna poora naam"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    className="h-10 text-sm"
+                    style={{ backgroundColor: "white", color: "black" }}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="profile-phone"
+                    className="text-xs font-semibold"
+                    style={{ color: "oklch(85% 0.04 50)" }}
+                  >
+                    Phone Number
+                  </Label>
+                  <Input
+                    id="profile-phone"
+                    data-ocid="profile.phone.input"
+                    placeholder="10-digit phone number"
+                    value={profilePhone}
+                    onChange={(e) => setProfilePhone(e.target.value)}
+                    className="h-10 text-sm"
+                    style={{ backgroundColor: "white", color: "black" }}
+                    type="tel"
+                  />
                 </div>
               </div>
               <Button
-                data-ocid="profile.save.button"
-                onClick={handleSaveProfile}
-                disabled={saveMutation.isPending}
+                data-ocid="profile.submit.button"
+                onClick={handleSubmitProfile}
                 className="w-full font-bold h-11"
                 style={{
                   background:
@@ -500,10 +408,7 @@ export function RegisterPage() {
                   color: "oklch(10% 0.02 270)",
                 }}
               >
-                {saveMutation.isPending ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : null}
-                Save & Continue →
+                Continue →
               </Button>
             </motion.div>
           )}
@@ -543,13 +448,17 @@ export function RegisterPage() {
                 >
                   Prize & Redeem Info (Team Leader)
                 </h4>
+                <p className="text-xs" style={{ color: "oklch(65% 0.04 50)" }}>
+                  UPI ID ya Instagram ID — ek zaroor bharo (dono optional hain
+                  lekin ek toh chahiye)
+                </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label
                       className="text-xs font-semibold"
                       style={{ color: "oklch(85% 0.04 50)" }}
                     >
-                      UPI ID (for prize money) *
+                      UPI ID (prize money ke liye)
                     </Label>
                     <Input
                       data-ocid="team.upi.input"
@@ -565,7 +474,7 @@ export function RegisterPage() {
                       className="text-xs font-semibold"
                       style={{ color: "oklch(85% 0.04 50)" }}
                     >
-                      Instagram ID (for redeem code) *
+                      Instagram ID (redeem code ke liye)
                     </Label>
                     <Input
                       data-ocid="team.insta.input"
@@ -578,28 +487,18 @@ export function RegisterPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex gap-3">
-                <Button
-                  data-ocid="team.back.button"
-                  onClick={() => setStep("profile")}
-                  variant="outline"
-                  className="border-border/50"
-                >
-                  ← Back
-                </Button>
-                <Button
-                  data-ocid="team.submit.button"
-                  onClick={handleSubmitTeam}
-                  className="flex-1 font-bold h-11"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, oklch(65% 0.22 45), oklch(55% 0.25 25))",
-                    color: "oklch(10% 0.02 270)",
-                  }}
-                >
-                  Continue to Payment →
-                </Button>
-              </div>
+              <Button
+                data-ocid="team.submit.button"
+                onClick={handleSubmitTeam}
+                className="w-full font-bold h-11"
+                style={{
+                  background:
+                    "linear-gradient(135deg, oklch(65% 0.22 45), oklch(55% 0.25 25))",
+                  color: "oklch(10% 0.02 270)",
+                }}
+              >
+                Continue to Payment →
+              </Button>
             </motion.div>
           )}
 
@@ -751,7 +650,6 @@ export function RegisterPage() {
                 dikhaega.
               </p>
 
-              {/* Status box */}
               <div
                 className="rounded-xl p-4 mx-auto max-w-sm space-y-3"
                 style={{

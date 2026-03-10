@@ -125,10 +125,13 @@ export function AdminPage() {
                 style={{ color: "oklch(65% 0.22 45)" }}
               />
             </div>
-            <h1 className="font-display font-extrabold text-2xl text-foreground">
+            <h1
+              className="font-display font-extrabold text-2xl"
+              style={{ color: "white" }}
+            >
               Admin Panel
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm mt-1" style={{ color: "black" }}>
               Enter password to access admin controls
             </p>
           </div>
@@ -146,7 +149,7 @@ export function AdminPage() {
               <p
                 data-ocid="admin.error_state"
                 className="text-xs"
-                style={{ color: "oklch(65% 0.2 25)" }}
+                style={{ color: "black" }}
               >
                 ⚠️ {error}
               </p>
@@ -185,7 +188,10 @@ export function AdminPage() {
                   className="w-6 h-6"
                   style={{ color: "oklch(65% 0.22 45)" }}
                 />
-                <h1 className="font-display font-extrabold text-2xl text-foreground">
+                <h1
+                  className="font-display font-extrabold text-2xl"
+                  style={{ color: "white" }}
+                >
                   Admin Dashboard
                 </h1>
               </div>
@@ -207,10 +213,13 @@ export function AdminPage() {
                       style={{ background: "oklch(60% 0.22 145)" }}
                     />
                   </span>
-                  <span style={{ color: "oklch(70% 0.18 145)" }}>LIVE</span>
+                  <span style={{ color: "black" }}>LIVE</span>
                 </div>
                 {lastUpdated && (
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <span
+                    className="text-xs flex items-center gap-1"
+                    style={{ color: "black" }}
+                  >
                     <RefreshCw className="w-3 h-3" />
                     {lastUpdated.toLocaleTimeString()}
                   </span>
@@ -251,10 +260,13 @@ export function AdminPage() {
                   >
                     {stat.icon}
                   </div>
-                  <div className="font-display font-extrabold text-2xl text-foreground">
+                  <div
+                    className="font-display font-extrabold text-2xl"
+                    style={{ color: "black" }}
+                  >
                     {stat.value}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs" style={{ color: "black" }}>
                     {stat.label}
                   </div>
                 </div>
@@ -274,7 +286,7 @@ export function AdminPage() {
                       className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
                       style={{
                         background: "oklch(65% 0.22 45 / 0.2)",
-                        color: "oklch(65% 0.22 45)",
+                        color: "black",
                       }}
                     >
                       {users.length}
@@ -291,7 +303,7 @@ export function AdminPage() {
                       className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
                       style={{
                         background: "oklch(65% 0.22 45 / 0.2)",
-                        color: "oklch(65% 0.22 45)",
+                        color: "black",
                       }}
                     >
                       {registrations.length}
@@ -305,7 +317,7 @@ export function AdminPage() {
                       className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
                       style={{
                         background: "oklch(55% 0.22 25 / 0.25)",
-                        color: "oklch(70% 0.22 25)",
+                        color: "black",
                       }}
                     >
                       {pendingCount} pending
@@ -333,7 +345,8 @@ export function AdminPage() {
                   ) : users.length === 0 ? (
                     <div
                       data-ocid="admin.users.empty_state"
-                      className="text-center py-12 text-muted-foreground text-sm"
+                      className="text-center py-12 text-sm"
+                      style={{ color: "black" }}
                     >
                       No users registered yet.
                     </div>
@@ -344,13 +357,48 @@ export function AdminPage() {
                           style={{ background: "oklch(14% 0.02 265)" }}
                         >
                           <TableRow>
-                            <TableHead className="text-xs">#</TableHead>
-                            <TableHead className="text-xs">Name</TableHead>
-                            <TableHead className="text-xs">Email</TableHead>
-                            <TableHead className="text-xs">Age</TableHead>
-                            <TableHead className="text-xs">Game Name</TableHead>
-                            <TableHead className="text-xs">FF UID</TableHead>
-                            <TableHead className="text-xs">Phone</TableHead>
+                            <TableHead
+                              className="text-xs"
+                              style={{ color: "black" }}
+                            >
+                              #
+                            </TableHead>
+                            <TableHead
+                              className="text-xs"
+                              style={{ color: "black" }}
+                            >
+                              Name
+                            </TableHead>
+                            <TableHead
+                              className="text-xs"
+                              style={{ color: "black" }}
+                            >
+                              Email
+                            </TableHead>
+                            <TableHead
+                              className="text-xs"
+                              style={{ color: "black" }}
+                            >
+                              Age
+                            </TableHead>
+                            <TableHead
+                              className="text-xs"
+                              style={{ color: "black" }}
+                            >
+                              Game Name
+                            </TableHead>
+                            <TableHead
+                              className="text-xs"
+                              style={{ color: "black" }}
+                            >
+                              FF UID
+                            </TableHead>
+                            <TableHead
+                              className="text-xs"
+                              style={{ color: "black" }}
+                            >
+                              Phone
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -362,28 +410,46 @@ export function AdminPage() {
                                 borderColor: "oklch(28% 0.04 40 / 0.3)",
                               }}
                             >
-                              <TableCell className="text-xs text-muted-foreground">
+                              <TableCell
+                                className="text-xs"
+                                style={{ color: "black" }}
+                              >
                                 {i + 1}
                               </TableCell>
-                              <TableCell className="text-xs font-medium">
+                              <TableCell
+                                className="text-xs font-medium"
+                                style={{ color: "black" }}
+                              >
                                 {u.name}
                               </TableCell>
-                              <TableCell className="text-xs text-muted-foreground">
+                              <TableCell
+                                className="text-xs"
+                                style={{ color: "black" }}
+                              >
                                 {u.email}
                               </TableCell>
-                              <TableCell className="text-xs">
+                              <TableCell
+                                className="text-xs"
+                                style={{ color: "black" }}
+                              >
                                 {u.age.toString()}
                               </TableCell>
                               <TableCell
                                 className="text-xs font-mono"
-                                style={{ color: "oklch(65% 0.22 45)" }}
+                                style={{ color: "black" }}
                               >
                                 {u.gameName}
                               </TableCell>
-                              <TableCell className="text-xs font-mono text-muted-foreground">
+                              <TableCell
+                                className="text-xs font-mono"
+                                style={{ color: "black" }}
+                              >
                                 {u.ffUID.toString()}
                               </TableCell>
-                              <TableCell className="text-xs text-muted-foreground">
+                              <TableCell
+                                className="text-xs"
+                                style={{ color: "black" }}
+                              >
                                 {u.phoneNumber}
                               </TableCell>
                             </TableRow>
@@ -414,7 +480,8 @@ export function AdminPage() {
                   ) : registrations.length === 0 ? (
                     <div
                       data-ocid="admin.regs.empty_state"
-                      className="text-center py-12 text-muted-foreground text-sm"
+                      className="text-center py-12 text-sm"
+                      style={{ color: "black" }}
                     >
                       No registrations yet.
                     </div>
@@ -432,29 +499,38 @@ export function AdminPage() {
                         >
                           <div className="flex items-center justify-between flex-wrap gap-2">
                             <div>
-                              <span className="text-xs text-muted-foreground">
+                              <span
+                                className="text-xs"
+                                style={{ color: "black" }}
+                              >
                                 Tournament:
                               </span>
                               <span
                                 className="ml-2 text-sm font-semibold"
-                                style={{ color: "oklch(65% 0.22 45)" }}
+                                style={{ color: "black" }}
                               >
                                 {getTournamentName(r.tournamentId)}
                               </span>
                             </div>
-                            <div className="text-xs text-muted-foreground font-mono">
+                            <div
+                              className="text-xs font-mono"
+                              style={{ color: "black" }}
+                            >
                               {new Date(
                                 Number(r.timestamp) / 1_000_000,
                               ).toLocaleDateString()}
                             </div>
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs" style={{ color: "black" }}>
                             UPI:{" "}
-                            <span className="text-foreground font-mono">
+                            <span
+                              className="font-mono"
+                              style={{ color: "black" }}
+                            >
                               {r.teamInfo.teamLeaderUPI}
                             </span>{" "}
                             | Insta:{" "}
-                            <span className="text-foreground">
+                            <span style={{ color: "black" }}>
                               {r.teamInfo.teamLeaderInsta}
                             </span>
                           </div>
@@ -467,11 +543,11 @@ export function AdminPage() {
                               >
                                 <div
                                   className="font-bold"
-                                  style={{ color: "oklch(65% 0.22 45)" }}
+                                  style={{ color: "black" }}
                                 >
                                   {m.gameName}
                                 </div>
-                                <div className="text-muted-foreground">
+                                <div style={{ color: "black" }}>
                                   UID: {m.ffUID.toString()}
                                 </div>
                               </div>
@@ -503,7 +579,8 @@ export function AdminPage() {
                   ) : payments.length === 0 ? (
                     <div
                       data-ocid="admin.payments.empty_state"
-                      className="text-center py-12 text-muted-foreground text-sm"
+                      className="text-center py-12 text-sm"
+                      style={{ color: "black" }}
                     >
                       No payment requests yet.
                     </div>
@@ -523,19 +600,25 @@ export function AdminPage() {
                           }}
                         >
                           <div className="space-y-1 flex-1 min-w-0">
-                            <div className="text-xs text-muted-foreground truncate">
+                            <div
+                              className="text-xs truncate"
+                              style={{ color: "black" }}
+                            >
                               User:{" "}
-                              <span className="font-mono text-foreground">
+                              <span
+                                className="font-mono"
+                                style={{ color: "black" }}
+                              >
                                 {p.userId.toString().slice(0, 20)}...
                               </span>
                             </div>
                             <div
                               className="text-sm font-semibold"
-                              style={{ color: "oklch(65% 0.22 45)" }}
+                              style={{ color: "black" }}
                             >
                               {getTournamentName(p.tournamentId)}
                             </div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-xs" style={{ color: "black" }}>
                               {new Date(
                                 Number(p.timestamp) / 1_000_000,
                               ).toLocaleString()}

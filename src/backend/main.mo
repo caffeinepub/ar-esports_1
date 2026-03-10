@@ -82,7 +82,7 @@ actor {
 
   // Helper function to create composite key for registration
   func makeRegistrationKey(userId : Principal, tournamentId : TournamentId, dayTimestamp : Time.Time) : Text {
-    let day = dayTimestamp / 86_400_000_000_000; // Convert to days
+    let day = dayTimestamp / 86_400_000_000_000;
     userId.toText() # "|" # tournamentId # "|" # day.toText();
   };
 
@@ -91,11 +91,52 @@ actor {
     userId.toText() # "|" # tournamentId;
   };
 
-  // State
-  let userProfiles = Map.empty<Principal, UserProfile>();
-  let tournaments = Map.empty<TournamentId, Tournament>();
-  let tournamentRegistrations = Map.empty<Text, TournamentRegistration>();
-  let paymentRequests = Map.empty<Text, PaymentRequest>();
+  // Stable State - persists across upgrades
+  stable var userProfilesStable : [(Principal, UserProfile)] = [];
+  stable var tournamentsStable : [(TournamentId, Tournament)] = [];
+  stable var tournamentRegistrationsStable : [(Text, TournamentRegistration)] = [];
+  stable var paymentRequestsStable : [(Text, PaymentRequest)] = [];
+
+  // In-memory state
+  let userProfiles = Map.fromIter<Principal, UserProfile>(userProfilesStable.vals());
+  let tournaments = Map.fromIter<TournamentId, Tournament>(tournamentsStable.vals());
+  let tournamentRegistrations = Map.fromIter<Text, TournamentRegistration>(tournamentRegistrationsStable.vals());
+  let paymentRequests = Map.fromIter<Text, PaymentRequest>(paymentRequestsStable.vals());
+
+  // Upgrade hooks to persist state
+  system func preupgrade() {
+    userProfilesStable := userProfiles.entries().toArray();
+    tournamentsStable := tournaments.entries().toArray();
+    tournamentRegistrationsStable := tournamentRegistrations.entries().toArray();
+    paymentRequestsStable := paymentRequests.entries().toArray();
+  };
+
+  system func postupgrade() {
+    userProfilesStable := [];
+    tournamentsStable := [];
+    tournamentRegistrationsStable := [];
+    paymentRequestsStable := [];
+    // Re-seed tournaments if none exist
+    seedTournamentsIfEmpty();
+  };
+
+  // Auto-seed tournaments
+  func seedTournamentsIfEmpty() {
+    if (tournaments.size() == 0) {
+      let defaultTournaments : [(TournamentId, Tournament)] = [
+        ("duo-11", { id = "duo-11"; tournamentType = #duo; timeSlot = 11; entryFee = 30; prize = 50 }),
+        ("duo-16", { id = "duo-16"; tournamentType = #duo; timeSlot = 16; entryFee = 30; prize = 50 }),
+        ("squad-13", { id = "squad-13"; tournamentType = #squad; timeSlot = 13; entryFee = 40; prize = 65 }),
+        ("squad-20", { id = "squad-20"; tournamentType = #squad; timeSlot = 20; entryFee = 40; prize = 65 }),
+      ];
+      for ((id, t) in defaultTournaments.vals()) {
+        tournaments.add(id, t);
+      };
+    };
+  };
+
+  // Initialize tournaments on first deploy
+  seedTournamentsIfEmpty();
 
   // Authorization
   let accessControlState = AccessControl.initState();
@@ -138,13 +179,11 @@ actor {
   };
 
   public query ({ caller }) func listTournaments() : async [Tournament] {
-    // No authorization needed - public information
     tournaments.values().toArray().sort();
   };
 
   // Registration
   public shared ({ caller }) func registerTournament(tournamentId : TournamentId, team : TeamInfo) : async Text {
-    // Must be authenticated user
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can register for tournaments");
     };
@@ -154,7 +193,6 @@ actor {
         Runtime.trap("Tournament does not exist");
       };
       case (?tournament) {
-        // Validate team size based on tournament type
         let expectedSize = switch (tournament.tournamentType) {
           case (#duo) 2;
           case (#squad) 4;
@@ -167,7 +205,6 @@ actor {
         let now = Time.now();
         let registrationKey = makeRegistrationKey(caller, tournamentId, now);
         
-        // Check for duplicate registration (one per user per tournament per day)
         switch (tournamentRegistrations.get(registrationKey)) {
           case (?_) {
             Runtime.trap("You have already registered for this tournament today");
@@ -199,7 +236,6 @@ actor {
 
   // Payment Status
   public query ({ caller }) func getPaymentStatus(tournamentId : TournamentId) : async PaymentStatus {
-    // Must be authenticated user
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can check payment status");
     };
@@ -210,7 +246,6 @@ actor {
         Runtime.trap("Payment request does not exist");
       };
       case (?request) {
-        // Verify ownership or admin access
         if (request.userId != caller and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: Can only view your own payment status");
         };
@@ -230,7 +265,7 @@ actor {
     ).toArray();
   };
 
-  // Admin Panel - approve/reject are public (frontend password is access control)
+  // Admin - approve/reject payments (public - frontend password guards access)
   public shared func approvePayment(userId : Principal, tournamentId : TournamentId) : async () {
     let paymentKey = makePaymentKey(userId, tournamentId);
     switch (paymentRequests.get(paymentKey)) {
@@ -267,7 +302,7 @@ actor {
     };
   };
 
-  // Admin Panel - Read queries are public (frontend password protects access)
+  // Admin Panel - public queries (frontend password protects access)
   public query func getAllUsers() : async [UserProfile] {
     userProfiles.values().toArray();
   };
@@ -282,7 +317,6 @@ actor {
 
   // Duplicate Prevention
   public query ({ caller }) func checkDuplicateRegistration(tournamentId : TournamentId) : async Bool {
-    // Must be authenticated user checking their own registration
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can check registration status");
     };
