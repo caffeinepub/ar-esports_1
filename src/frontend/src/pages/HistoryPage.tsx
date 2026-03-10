@@ -13,27 +13,42 @@ import {
 function PaymentBadge({
   status,
 }: { status: PaymentStatus | null | undefined }) {
-  if (!status)
+  if (!status || status === PaymentStatus.pending)
     return (
-      <span className="badge-pending px-2.5 py-1 rounded-full text-xs font-semibold">
-        Pending
+      <span
+        className="px-2.5 py-1 rounded-full text-xs font-semibold"
+        style={{
+          background: "oklch(55% 0.18 45 / 0.15)",
+          color: "oklch(70% 0.18 45)",
+          border: "1px solid oklch(55% 0.18 45 / 0.4)",
+        }}
+      >
+        ⏳ Registration in Progress
+      </span>
+    );
+  if (status === PaymentStatus.approved)
+    return (
+      <span
+        className="px-2.5 py-1 rounded-full text-xs font-semibold"
+        style={{
+          background: "oklch(50% 0.2 145 / 0.15)",
+          color: "oklch(65% 0.2 145)",
+          border: "1px solid oklch(50% 0.2 145 / 0.4)",
+        }}
+      >
+        ✓ Registered
       </span>
     );
   return (
     <span
-      className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-        status === PaymentStatus.approved
-          ? "badge-approved"
-          : status === PaymentStatus.rejected
-            ? "badge-rejected"
-            : "badge-pending"
-      }`}
+      className="px-2.5 py-1 rounded-full text-xs font-semibold"
+      style={{
+        background: "oklch(45% 0.2 25 / 0.15)",
+        color: "oklch(65% 0.2 25)",
+        border: "1px solid oklch(45% 0.2 25 / 0.4)",
+      }}
     >
-      {status === PaymentStatus.approved
-        ? "✓ Approved"
-        : status === PaymentStatus.rejected
-          ? "✗ Rejected"
-          : "⏳ Pending"}
+      ✗ Rejected
     </span>
   );
 }
@@ -50,7 +65,13 @@ function HistoryItem({ reg, tournaments }: { reg: any; tournaments: any[] }) {
       className="rounded-xl p-4 space-y-3"
       style={{
         background: "oklch(16% 0.025 260)",
-        border: "1px solid oklch(28% 0.04 40 / 0.5)",
+        border: `1px solid ${
+          paymentStatus === PaymentStatus.approved
+            ? "oklch(50% 0.2 145 / 0.5)"
+            : paymentStatus === PaymentStatus.rejected
+              ? "oklch(45% 0.2 25 / 0.5)"
+              : "oklch(55% 0.18 45 / 0.4)"
+        }`,
       }}
     >
       <div className="flex items-center justify-between flex-wrap gap-2">

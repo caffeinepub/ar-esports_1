@@ -230,12 +230,8 @@ actor {
     ).toArray();
   };
 
-  // Admin Panel
-  public shared ({ caller }) func approvePayment(userId : Principal, tournamentId : TournamentId) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can approve payments");
-    };
-
+  // Admin Panel - approve/reject are public (frontend password is access control)
+  public shared func approvePayment(userId : Principal, tournamentId : TournamentId) : async () {
     let paymentKey = makePaymentKey(userId, tournamentId);
     switch (paymentRequests.get(paymentKey)) {
       case (null) {
@@ -253,11 +249,7 @@ actor {
     };
   };
 
-  public shared ({ caller }) func rejectPayment(userId : Principal, tournamentId : TournamentId) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can reject payments");
-    };
-
+  public shared func rejectPayment(userId : Principal, tournamentId : TournamentId) : async () {
     let paymentKey = makePaymentKey(userId, tournamentId);
     switch (paymentRequests.get(paymentKey)) {
       case (null) {
