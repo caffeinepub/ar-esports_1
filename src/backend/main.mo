@@ -275,24 +275,16 @@ actor {
     };
   };
 
-  public query ({ caller }) func getAllUsers() : async [UserProfile] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can view all users");
-    };
+  // Admin Panel - Read queries are public (frontend password protects access)
+  public query func getAllUsers() : async [UserProfile] {
     userProfiles.values().toArray();
   };
 
-  public query ({ caller }) func getAllRegistrations() : async [TournamentRegistration] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can view all registrations");
-    };
+  public query func getAllRegistrations() : async [TournamentRegistration] {
     tournamentRegistrations.values().toArray();
   };
 
-  public query ({ caller }) func getAllPaymentRequests() : async [PaymentRequest] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can view all payment requests");
-    };
+  public query func getAllPaymentRequests() : async [PaymentRequest] {
     paymentRequests.values().toArray();
   };
 

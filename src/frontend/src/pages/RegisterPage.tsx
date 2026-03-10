@@ -34,7 +34,8 @@ export function RegisterPage() {
   const navigate = useNavigate();
   const { identity, login, isLoggingIn } = useInternetIdentity();
 
-  const { data: tournaments } = useListTournaments();
+  const { data: tournaments, isLoading: tournamentsLoading } =
+    useListTournaments();
   const { data: profile, isLoading: profileLoading } = useGetCallerProfile();
   const { data: isDuplicate, isLoading: dupLoading } = useCheckDuplicate(
     tournamentId || "",
@@ -44,7 +45,8 @@ export function RegisterPage() {
 
   const tournament = tournaments?.find((t) => t.id === tournamentId);
   const isDuo = tournament?.tournamentType === TournamentType.duo;
-  const memberCount = isDuo ? 2 : 4;
+  // Only compute memberCount once tournament is loaded to avoid defaulting to 4
+  const memberCount = tournamentsLoading || !tournament ? null : isDuo ? 2 : 4;
 
   const [step, setStep] = useState<Step>("profile");
   const [showConfetti, setShowConfetti] = useState(false);
@@ -132,6 +134,7 @@ export function RegisterPage() {
   };
 
   const handleSubmitTeam = () => {
+    if (!memberCount) return;
     const validMembers = members.slice(0, memberCount);
     for (let i = 0; i < memberCount; i++) {
       const m = validMembers[i];
@@ -158,7 +161,7 @@ export function RegisterPage() {
   };
 
   const handlePaid = async () => {
-    if (!tournamentId) return;
+    if (!tournamentId || !memberCount) return;
     const validMembers = members.slice(0, memberCount).map((m) => ({
       ffUID: m.ffUID || BigInt(0),
       gameName: m.gameName || "",
@@ -229,7 +232,7 @@ export function RegisterPage() {
     );
   }
 
-  if (dupLoading || profileLoading) {
+  if (dupLoading || profileLoading || tournamentsLoading) {
     return (
       <main className="pt-20 min-h-screen flex items-center justify-center">
         <div
@@ -283,6 +286,9 @@ export function RegisterPage() {
       </main>
     );
   }
+
+  // memberCount is guaranteed non-null here since tournamentsLoading is false
+  const resolvedMemberCount = memberCount ?? 2;
 
   return (
     <main className="pt-20 min-h-screen px-4 py-8">
@@ -515,13 +521,14 @@ export function RegisterPage() {
                   Team Details — {isDuo ? "2 Players" : "4 Players"}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Fill in all {memberCount} players' Free Fire Max details.
+                  Fill in all {resolvedMemberCount} players' Free Fire Max
+                  details.
                 </p>
               </div>
               <TeamForm
                 members={members}
                 onChange={handleMemberChange}
-                count={memberCount}
+                count={resolvedMemberCount}
               />
               <div
                 className="rounded-xl p-4 space-y-4"
