@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "@tanstack/react-router";
 import { Clock, Coins, Trophy, Users, Zap } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import type { Tournament } from "../backend";
 import { TournamentType } from "../backend";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
@@ -11,7 +11,6 @@ interface TournamentCardProps {
 }
 
 function formatTime(ts: bigint): string {
-  // timeSlot stored as hour (11, 13, 16, 20)
   const hour = Number(ts);
   const h = hour % 12 === 0 ? 12 : hour % 12;
   const ampm = hour < 12 ? "AM" : "PM";
@@ -28,7 +27,7 @@ export function TournamentCard({ tournament, index }: TournamentCardProps) {
       login();
       return;
     }
-    navigate(`/register/${tournament.id}`);
+    navigate({ to: `/register/${tournament.id}` });
   };
 
   const gradients = [
@@ -44,12 +43,10 @@ export function TournamentCard({ tournament, index }: TournamentCardProps) {
       className="relative rounded-xl overflow-hidden card-glow cursor-pointer transition-all duration-300 gradient-border"
       style={{ background: "oklch(16% 0.025 260)" }}
     >
-      {/* Top accent bar replaced by gradient overlay */}
       <div
         className={`absolute inset-0 bg-gradient-to-br ${gradients[index % 4]} pointer-events-none`}
       />
 
-      {/* Live indicator */}
       <div className="absolute top-3 right-3 flex items-center gap-1.5">
         <div
           className="w-2 h-2 rounded-full pulse-ring"
@@ -64,7 +61,6 @@ export function TournamentCard({ tournament, index }: TournamentCardProps) {
       </div>
 
       <div className="relative p-5 sm:p-6">
-        {/* Type badge */}
         <div className="flex items-center gap-2 mb-3">
           <span
             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider"

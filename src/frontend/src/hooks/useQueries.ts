@@ -2,28 +2,31 @@ import type { Principal } from "@icp-sdk/core/principal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TeamInfo, TournamentId, UserProfile } from "../backend";
 import { useActor } from "./useActor";
+import { useInternetIdentity } from "./useInternetIdentity";
 
 export function useListTournaments() {
-  const { actor, isFetching } = useActor();
+  const { actor } = useActor();
   return useQuery({
     queryKey: ["tournaments"],
     queryFn: async () => {
       if (!actor) return [];
       return actor.listTournaments();
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor,
+    refetchInterval: 5000,
   });
 }
 
 export function useGetCallerProfile() {
-  const { actor, isFetching } = useActor();
+  const { actor } = useActor();
+  const { identity } = useInternetIdentity();
   return useQuery({
     queryKey: ["callerProfile"],
     queryFn: async () => {
       if (!actor) return null;
       return actor.getCallerUserProfile();
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor && !!identity,
   });
 }
 
@@ -42,14 +45,24 @@ export function useSaveProfile() {
 }
 
 export function useCheckDuplicate(tournamentId: TournamentId) {
-  const { actor, isFetching } = useActor();
+  const { actor } = useActor();
+  const { identity } = useInternetIdentity();
   return useQuery({
     queryKey: ["duplicate", tournamentId],
     queryFn: async () => {
-      if (!actor) return false;
-      return actor.checkDuplicateRegistration(tournamentId);
+      if (!actor || !identity) return false;
+      try {
+        return await actor.checkDuplicateRegistration(tournamentId);
+      } catch {
+        return false;
+      }
     },
-    enabled: !!actor && !isFetching && !!tournamentId,
+    enabled: !!actor && !!identity && !!tournamentId,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    retry: false,
   });
 }
 
@@ -73,77 +86,85 @@ export function useRegisterTournament() {
 }
 
 export function useGetPaymentStatus(tournamentId: TournamentId) {
-  const { actor, isFetching } = useActor();
+  const { actor } = useActor();
+  const { identity } = useInternetIdentity();
   return useQuery({
     queryKey: ["paymentStatus", tournamentId],
     queryFn: async () => {
       if (!actor) return null;
       return actor.getPaymentStatus(tournamentId);
     },
-    enabled: !!actor && !isFetching && !!tournamentId,
+    enabled: !!actor && !!identity && !!tournamentId,
   });
 }
 
 export function useGetUserHistory() {
-  const { actor, isFetching } = useActor();
+  const { actor } = useActor();
+  const { identity } = useInternetIdentity();
   return useQuery({
     queryKey: ["history"],
     queryFn: async () => {
       if (!actor) return [];
       return actor.getUserHistory();
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor && !!identity,
   });
 }
 
 export function useIsCallerAdmin() {
-  const { actor, isFetching } = useActor();
+  const { actor } = useActor();
   return useQuery({
     queryKey: ["isAdmin"],
     queryFn: async () => {
       if (!actor) return false;
       return actor.isCallerAdmin();
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor,
   });
 }
 
 export function useGetAllUsers() {
-  const { actor, isFetching } = useActor();
+  const { actor } = useActor();
   return useQuery({
     queryKey: ["allUsers"],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllUsers();
+      const result = await actor.getAllUsers();
+      return result;
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor,
     refetchInterval: 5000,
+    retry: 3,
   });
 }
 
 export function useGetAllRegistrations() {
-  const { actor, isFetching } = useActor();
+  const { actor } = useActor();
   return useQuery({
     queryKey: ["allRegistrations"],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllRegistrations();
+      const result = await actor.getAllRegistrations();
+      return result;
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor,
     refetchInterval: 5000,
+    retry: 3,
   });
 }
 
 export function useGetAllPaymentRequests() {
-  const { actor, isFetching } = useActor();
+  const { actor } = useActor();
   return useQuery({
     queryKey: ["allPayments"],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllPaymentRequests();
+      const result = await actor.getAllPaymentRequests();
+      return result;
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor,
     refetchInterval: 5000,
+    retry: 3,
   });
 }
 
@@ -160,6 +181,7 @@ export function useApprovePayment() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["allPayments"] });
+      queryClient.invalidateQueries({ queryKey: ["allRegistrations"] });
     },
   });
 }

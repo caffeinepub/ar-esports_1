@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Clock, Loader2, Trophy } from "lucide-react";
 import { motion } from "motion/react";
-import { useNavigate } from "react-router-dom";
 import { PaymentStatus, TournamentType } from "../backend";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import {
@@ -161,7 +161,7 @@ export function HistoryPage() {
         <button
           type="button"
           data-ocid="history.back.button"
-          onClick={() => navigate("/")}
+          onClick={() => navigate({ to: "/" })}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Home
@@ -213,7 +213,7 @@ export function HistoryPage() {
             </p>
             <Button
               data-ocid="history.register.button"
-              onClick={() => navigate("/")}
+              onClick={() => navigate({ to: "/" })}
               className="font-bold"
               style={{
                 background:

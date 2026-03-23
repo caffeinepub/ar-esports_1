@@ -6,9 +6,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { History, LogIn, LogOut, MoreVertical, Shield, X } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 
 export function Navbar() {
@@ -59,13 +59,6 @@ export function Navbar() {
             >
               Home
             </Link>
-            <Link
-              to="/#tournaments"
-              data-ocid="nav.tournaments.link"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Tournaments
-            </Link>
           </nav>
 
           {/* Right side */}
@@ -114,7 +107,7 @@ export function Navbar() {
                   variant="ghost"
                   size="icon"
                   data-ocid="nav.dropdown_menu"
-                  className="w-9 h-9 rounded-full border border-border/50 hover:border-fire-orange/50"
+                  className="w-9 h-9 rounded-full border border-border/50"
                 >
                   {menuOpen ? (
                     <X className="w-4 h-4" />
@@ -134,7 +127,7 @@ export function Navbar() {
                 <DropdownMenuItem
                   data-ocid="nav.history.link"
                   onClick={() => {
-                    navigate("/history");
+                    navigate({ to: "/history" });
                     setMenuOpen(false);
                   }}
                   className="cursor-pointer gap-2"
@@ -148,7 +141,7 @@ export function Navbar() {
                 <DropdownMenuItem
                   data-ocid="nav.admin.link"
                   onClick={() => {
-                    navigate("/admin");
+                    navigate({ to: "/admin" });
                     setMenuOpen(false);
                   }}
                   className="cursor-pointer gap-2"

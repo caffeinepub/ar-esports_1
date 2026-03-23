@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -12,7 +13,6 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import type { TeamMember } from "../backend";
 import { TournamentType } from "../backend";
@@ -28,7 +28,9 @@ import {
 type Step = "profile" | "team" | "payment" | "done";
 
 export function RegisterPage() {
-  const { tournamentId } = useParams<{ tournamentId: string }>();
+  const { tournamentId } = useParams({ strict: false }) as {
+    tournamentId?: string;
+  };
   const navigate = useNavigate();
   const { identity, login, isLoggingIn } = useInternetIdentity();
 
@@ -41,7 +43,6 @@ export function RegisterPage() {
 
   const tournament = tournaments?.find((t) => t.id === tournamentId);
   const isDuo = tournament?.tournamentType === TournamentType.duo;
-  const memberCount = tournamentsLoading || !tournament ? null : isDuo ? 2 : 4;
 
   const [step, setStep] = useState<Step>("profile");
   const [showConfetti, setShowConfetti] = useState(false);
@@ -93,7 +94,7 @@ export function RegisterPage() {
   };
 
   const handleSubmitTeam = () => {
-    const count = memberCount ?? (isDuo ? 2 : 4);
+    const count = 2;
     const validMembers = members.slice(0, count);
     for (let i = 0; i < count; i++) {
       const m = validMembers[i];
@@ -117,7 +118,7 @@ export function RegisterPage() {
 
   const handlePaid = async () => {
     if (!tournamentId) return;
-    const count = memberCount ?? (isDuo ? 2 : 4);
+    const count = 2;
     const validMembers = members.slice(0, count).map((m) => ({
       ffUID: m.ffUID || BigInt(0),
       gameName: m.gameName || "",
@@ -186,7 +187,7 @@ export function RegisterPage() {
     );
   }
 
-  if (dupLoading || tournamentsLoading) {
+  if (tournamentsLoading || (!!identity && dupLoading)) {
     return (
       <main className="pt-20 min-h-screen flex items-center justify-center">
         <div
@@ -230,7 +231,7 @@ export function RegisterPage() {
           </p>
           <Button
             data-ocid="register.back.button"
-            onClick={() => navigate("/")}
+            onClick={() => navigate({ to: "/" })}
             variant="outline"
             className="border-fire-orange/30 hover:border-fire-orange/60"
           >
@@ -241,7 +242,7 @@ export function RegisterPage() {
     );
   }
 
-  const resolvedMemberCount = memberCount ?? (isDuo ? 2 : 4);
+  const resolvedMemberCount = 2;
   const steps: Step[] = ["profile", "team", "payment", "done"];
 
   return (
@@ -255,7 +256,7 @@ export function RegisterPage() {
         <button
           type="button"
           data-ocid="register.back.button"
-          onClick={() => navigate("/")}
+          onClick={() => navigate({ to: "/" })}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Tournaments
@@ -423,11 +424,10 @@ export function RegisterPage() {
             >
               <div>
                 <h3 className="font-display font-bold text-xl text-foreground mb-1">
-                  Team Details — {isDuo ? "2 Players" : "4 Players"}
+                  Team Details — 2 Players
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Fill in all {resolvedMemberCount} players' Free Fire Max
-                  details.
+                  Fill in both players' Free Fire Max details.
                 </p>
               </div>
               <TeamForm
@@ -690,7 +690,7 @@ export function RegisterPage() {
               <div className="pt-2">
                 <Button
                   data-ocid="register.home.button"
-                  onClick={() => navigate("/")}
+                  onClick={() => navigate({ to: "/" })}
                   className="font-bold"
                   style={{
                     background:
